@@ -37,6 +37,7 @@
   "homepage": "https://github.com/chillapi#readme",
   "dependencies": {
     "@chillapi/api": "1.0.31",
+    "@chillapi/module-discovery": "^1.0.6",
     "handlebars": "^4.7.6",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.20",
@@ -45,6 +46,7 @@
   "peerDependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "helmet": "^4.6.0",
     "express-openapi-validator": "^4.0.2",
     "express-session": "^1.17.1",
     "jwks-rsa": "^1.12.0",
