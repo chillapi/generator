@@ -1,0 +1,14 @@
+{{#each foreignKeys}}
+import { entityName } from './{{entityName}}';
+{{/each}}
+
+export interface {{entityName}} {
+{{#each properties}}
+{{#if propertyDescription}}
+    /**
+    * {{propertyDescription}}
+    */
+{{/if}}
+    {{propertyName}}{{#if optional}}?{{/if}}: {{propertyType}};
+{{/each}}
+}

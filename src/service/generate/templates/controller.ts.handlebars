@@ -1,0 +1,28 @@
+import { Router, Request, Response } from "express";
+{{#if anyAuth}}
+import { requiredScopes } from 'express-oauth2-bearer';
+{{/if}}
+
+import {{pathCamel}}Service from '../service/{{pathDash}}-service';
+
+{{#each methods}}
+{{#if responseEntityType}}
+import { {{responseEntityType}} } from "../model/{{responseEntityType}}";
+{{/if}}
+{{/each}}
+
+export const {{pathCamel}}Router = Router();
+
+{{#each methods}}
+userRouter.{{name}}('', {{#if auth}}requiredScopes('{{auth.scope}}'),{{/if}} async (request: Request, response: Response<{{responseType}}{{#if responseIsArray}}[]{{/if}}>) => {
+    try {
+        response
+            .status({{defaultResponseCode}})
+            .json(await {{pathCamel}}Service.handle{{nameCapital}}(request));
+        return next();
+    } catch(err){
+        console.log(err);
+        return next(err);
+    }
+})
+{{/each}}
