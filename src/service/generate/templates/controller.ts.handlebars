@@ -1,31 +1,14 @@
 import { Router, Request, Response } from "express";
 {{#if anyAuth}}
-import { requiredScopes } from 'express-oauth2-bearer';
+import { checkJwt } from "../middleware/auth.middleware";
+import jwtAuthz from 'express-jwt-authz';
 {{/if}}
-
-import {{pathCamel}}Service from '../service/{{pathDash}}-service';
-
-{{#each returnEntityTypes}}
-import { {{this}} } from "../model/{{this}}";
-{{/each}}
 
 export const {{pathCamel}}Router = Router();
 
 {{#each operations}}
 {{../pathCamel}}Router.{{method}}('', 
-    {{~#if authorizationScopes}}requiredScopes('{{#each authorizationScopes}}{{this}}{{#unless @last}} {{/unless}}{{/each}}'),{{/if}} async (request: Request, response: Response{{#if defaultResponse.content.type}}<{{defaultResponse.content.type}}{{#if defaultResponse.content.isArray}}[]{{/if}}>{{/if}}, next:any) => {
-    try {
-        response
-            .status({{defaultResponse.code}})
-{{#if defaultResponse.content.type }}
-            .json(await {{../pathCamel}}Service.handle{{methodCapital}}(
-                {{#each parameters}}{{this}}{{#unless @last}},{{/unless}}
-                {{/each}}));
-{{/if}}
-        return next();
-    } catch(err){
-        console.log(err);
-        return next(err);
-    }
+    {{~#if authorizationScopes}}checkJwt,jwtAuthz([{{#each authorizationScopes}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}]),{{/if}} async (request: Request, response: Response, next:any) => {
+        response.status(500).json({error:'Not yet implemented'})
 })
 {{/each}}

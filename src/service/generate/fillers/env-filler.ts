@@ -1,16 +1,42 @@
-export interface AuthEnvModel {
-    domain: string;
-    audience: string;
-}
+import https from "https";
+
 export interface EnvModel {
-    port: number;
-    auth?: AuthEnvModel;
+  port: number;
+  auth?: any;
 }
 
-export const fill = (port: number, authDomain?: string, authAudience?: string): EnvModel => {
-    const env: EnvModel = { port };
-    if (!!authDomain && !!authAudience) {
-        env.auth = { domain: authDomain, audience: authAudience };
+export const fill = async (
+  port: number,
+  openId?: string
+): Promise<EnvModel> => {
+  const env: EnvModel = { port };
+  if (!!openId) {
+    try {
+      env.auth = await getJson(openId);
+    } catch (err) {
+      return Promise.reject(err);
     }
-    return env;
-}
+  }
+  return Promise.resolve(env);
+};
+
+const getJson = async (url: string): Promise<any> =>
+  new Promise((resolve, reject) =>
+    https
+      .get(url, (resp) => {
+        let data = "";
+
+        // A chunk of data has been received.
+        resp.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on("end", () => {
+          resolve(JSON.parse(data));
+        });
+      })
+      .on("error", (err) => {
+        reject(err);
+      })
+  );

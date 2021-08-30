@@ -105,6 +105,6 @@ dist
 
 dist
 
-example/out
+example/src
 
 precompiled.js
