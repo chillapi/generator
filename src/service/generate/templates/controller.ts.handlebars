@@ -5,20 +5,23 @@ import { requiredScopes } from 'express-oauth2-bearer';
 
 import {{pathCamel}}Service from '../service/{{pathDash}}-service';
 
-{{#each methods}}
-{{#if responseEntityType}}
-import { {{responseEntityType}} } from "../model/{{responseEntityType}}";
-{{/if}}
+{{#each returnEntityTypes}}
+import { {{this}} } from "../model/{{this}}";
 {{/each}}
 
 export const {{pathCamel}}Router = Router();
 
-{{#each methods}}
-userRouter.{{name}}('', {{#if auth}}requiredScopes('{{auth.scope}}'),{{/if}} async (request: Request, response: Response<{{responseType}}{{#if responseIsArray}}[]{{/if}}>) => {
+{{#each operations}}
+{{../pathCamel}}Router.{{method}}('', 
+    {{~#if authorizationScopes}}requiredScopes('{{#each authorizationScopes}}{{this}}{{#unless @last}} {{/unless}}{{/each}}'),{{/if}} async (request: Request, response: Response{{#if defaultResponse.content.type}}<{{defaultResponse.content.type}}{{#if defaultResponse.content.isArray}}[]{{/if}}>{{/if}}, next:any) => {
     try {
         response
-            .status({{defaultResponseCode}})
-            .json(await {{pathCamel}}Service.handle{{nameCapital}}(request));
+            .status({{defaultResponse.code}})
+{{#if defaultResponse.content.type }}
+            .json(await {{../pathCamel}}Service.handle{{methodCapital}}(
+                {{#each parameters}}{{this}}{{#unless @last}},{{/unless}}
+                {{/each}}));
+{{/if}}
         return next();
     } catch(err){
         console.log(err);

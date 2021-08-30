@@ -12,7 +12,7 @@ export interface IndexModel {
 
 export const fill = (pathNames: string[]): IndexModel => ({
     paths: pathNames.map(path => ({
-        path,
+        path: path.replace('{', ':').replace('}', ''),
         camelName: _.camelCase(path),
         dashName: _.kebabCase(path)
     }))

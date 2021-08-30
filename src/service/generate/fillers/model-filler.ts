@@ -2,8 +2,11 @@ import { Entity } from "@chillapi/api";
 
 export const typeMap: { [key: string]: string } = {
     'string': 'string',
+    'string:uuid': 'string',
     'string:date': 'Date',
     'string:date-time': 'Date',
+    'string:email': 'string',
+    'string:url': 'string',
     'number': 'number',
     'number:float': 'number',
     'integer': 'number',
@@ -12,30 +15,16 @@ export const typeMap: { [key: string]: string } = {
     // TODO add others
 }
 
-export interface EntityPropertyModel {
-    propertyName: string;
-    propertyDescription: string;
-    optional: boolean;
-    propertyType: string;
-}
-export interface ForeignKeyModel {
-    entityName: string;
-}
-export interface EntityModel {
-    entityName: string;
-    properties: EntityPropertyModel[];
-    foreignKeys: ForeignKeyModel[];
+
+export interface EntityModel extends Entity {
+    foreignKeys: string[];
 }
 
 export const fill = (entity: Entity): EntityModel => ({
-    entityName: entity.name,
-    properties: entity.properties.map(prop => ({
-        propertyName: prop.name,
-        propertyDescription: prop.description,
-        propertyType: typeMap[prop.type] || prop.type,
-        optional: !prop.isRequired
-    })),
+    ...entity,
+    properties: entity.properties.map(prop => ({ ...prop, type: typeMap[prop.type] || prop.type })),
     foreignKeys: entity.properties
-        .filter(prop => !!prop.reference)
-        .map(prop => ({ entityName: prop.reference }))
+        .filter(prop => !!prop.isReference)
+        .map(prop => prop.type)
+        .filter((val, index, arr) => arr.indexOf(val) === index)
 })

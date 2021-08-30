@@ -4,21 +4,22 @@ import { resolve } from 'path';
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml';
 
 import { OpenAPIV3 } from '@chillapi/api/dist/openapiv3';
-import { load } from '@chillapi/module-discovery';
 
 import { BootstrapConfig } from '../../model/BootstrapConfig';
+import { writeConfigStubs } from './ConfigStubGenerator';
+import { writeServerFiles } from './ServerGenerator';
 
 
 export async function generate(apiPath: string, rootPath: string, moduleName?: string): Promise<void> {
     try {
         const api = await loadApi(apiPath);
-        const configPath = resolve(rootPath, 'config');
-        const inferredModuleName = moduleName || await loadModule();
+
         const lockFile = resolve(rootPath, 'chill-api-lock.json');
         const locks = existsSync(lockFile) ? require(lockFile) : {};
-        console.info(`Using ${inferredModuleName} for stub generation`);
-        await require(inferredModuleName).generateStubs(api, configPath, locks);
-        await writeBaseConfig(apiPath, configPath);
+
+        await writeConfigStubs(resolve(rootPath, 'config'), api, locks, moduleName);
+        await writeServerFiles(rootPath, api, locks);
+
         await writeFile(lockFile, JSON.stringify(locks));
         return Promise.resolve();
     } catch (err) {
@@ -26,17 +27,7 @@ export async function generate(apiPath: string, rootPath: string, moduleName?: s
     }
 }
 
-async function loadModule(): Promise<any> {
-    console.info('Auto-disovering module to use for stub generation');
-    const chillAPIModulesWithGenerate: any[] = await load('generateStubs');
-    if (chillAPIModulesWithGenerate.length === 0) {
-        return Promise.reject("No seed generator found within project dependencies. Try adding '@chillapi/stub' to your project.json.");
-    }
-    if (chillAPIModulesWithGenerate.length > 1) {
-        return Promise.reject(`Multiple seed generators found: ${chillAPIModulesWithGenerate.join(';')}. Run the generate command with a specific module, or leave only one seed generator.`)
-    }
-    return Promise.resolve(chillAPIModulesWithGenerate[0]);
-}
+
 
 async function loadApi(apiPath: string): Promise<OpenAPIV3> {
     if (existsSync(apiPath)) {

@@ -1,3 +1,11 @@
-export cons handle = (request:any) => {
-    
+{{#each returnEntityTypes}}
+import { {{this}} } from "../model/{{this}}";
+{{/each}}
+
+{{#each operations}}
+export const handle{{methodCapital}} = async (
+    {{#each parameters}}{{name}}:{{type}}{{#unless @last}},{{/unless}}{{/each}}
+):Promise<{{defaultResponse.content.type}}{{#if defaultResponse.content.isArray}}[]{{/if}}> => {
+    return Promise.reject('Not yet implemented');
 }
+{{/each}}

@@ -5,10 +5,10 @@ import { typeMap } from "./model-filler";
 export interface OperationModel extends Operation {
   defaultResponse: Response;
   methodCapital: string;
-  parameters: string[];
+  parameters: { name: string; type: string }[];
 }
 
-export interface ControllerModel {
+export interface ServiceModel {
   anyAuth: boolean;
   pathCamel: string;
   pathDash: string;
@@ -19,7 +19,7 @@ export interface ControllerModel {
 export const fill = (
   pathName: string,
   operations: Operation[]
-): ControllerModel => {
+): ServiceModel => {
   const returnEntityTypes: string[] = [];
   const ops: OperationModel[] = [];
 
@@ -39,14 +39,14 @@ export const fill = (
       returnEntityTypes.push(defaultResponse.content.type);
     }
 
-    const parameters: string[] = [];
+    const parameters: { name: string; type: string }[] = [];
 
     if (op.body) {
-      parameters.push("request.body");
+      parameters.push({ name: "body", type: op.body.type });
     }
 
-    [...(op.pathParameters||[]), ...(op.queryParameters||[])].forEach((p) =>
-      parameters.push(`request.params.${p.name}`)
+    [...(op.pathParameters || []), ...(op.queryParameters || [])].forEach((p) =>
+      parameters.push({ name: p.name, type: typeMap[p.type] || p.type })
     );
 
     ops.push({
